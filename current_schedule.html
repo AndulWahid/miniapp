@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Current Schedule</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #f8f9fb;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 24px 0 32px 0;
+    }
+    .date-header {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 24px 0 12px 0;
+      color: #222;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 20px 18px 18px 18px;
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .booking-id {
+      font-weight: 600;
+      color: #2d7cff;
+      margin-right: 10px;
+      font-size: 1.1rem;
+      background: #f5f6fa;
+      border-radius: 6px;
+      padding: 2px 8px;
+      display: flex;
+      align-items: center;
+    }
+    .tag {
+      font-size: 0.95rem;
+      font-weight: 500;
+      background: #f5f6fa;
+      color: #555;
+      border-radius: 6px;
+      padding: 2px 10px;
+      margin-right: 8px;
+      margin-bottom: 2px;
+    }
+    .time, .price {
+      font-size: 1.05rem;
+      font-weight: 600;
+      background: #222;
+      color: #fff;
+      border-radius: 6px;
+      padding: 2px 10px;
+      margin-right: 8px;
+      margin-bottom: 2px;
+    }
+    .price {
+      background: #2d7cff;
+    }
+    .label {
+      font-weight: 600;
+      color: #333;
+      margin-right: 4px;
+    }
+    .pickup, .dropoff {
+      margin-bottom: 6px;
+      color: #444;
+      font-size: 1rem;
+    }
+    .more-info-btn {
+      background: #f5f6fa;
+      border: none;
+      color: #888;
+      font-size: 1rem;
+      padding: 8px 0;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      border-radius: 6px;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .more-info-btn:hover {
+      background: #e0e7ff;
+    }
+    .more-info {
+      display: none;
+      background: #f8f9fb;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-top: 6px;
+      color: #555;
+      font-size: 0.98rem;
+    }
+    .empty {
+      text-align: center;
+      color: #aaa;
+      margin-top: 40px;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="scheduleContainer">
+    <div class="date-header" id="loading">Loading schedule...</div>
+  </div>
+  <script>
+    async function fetchSchedule() {
+      try {
+        const res = await fetch('/api/schedule');
+        if (!res.ok) throw new Error('Failed to fetch schedule');
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        document.getElementById('scheduleContainer').innerHTML = `<div class='empty'>Failed to load schedule.</div>`;
+        return [];
+      }
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function createCard(booking) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="row">
+          <span class="booking-id">${booking.id || ''}</span>
+          <span class="tag">${booking.type || ''}</span>
+          <span class="tag">${booking.class || ''}</span>
+        </div>
+        <div class="row">
+          <span class="time">${booking.time || ''}</span>
+          <span class="price">${booking.price ? 'USD ' + booking.price : ''}</span>
+        </div>
+        <div class="pickup"><span class="label">Pickup:</span> ${booking.pickup || ''}</div>
+        <div class="dropoff"><span class="label">Dropoff:</span> ${booking.dropoff || ''}</div>
+        <button class="more-info-btn" onclick="toggleMoreInfo(this)">› More info</button>
+        <div class="more-info">${booking.more_info || 'No additional info.'}</div>
+      `;
+      return card;
+    }
+
+    function toggleMoreInfo(btn) {
+      const info = btn.nextElementSibling;
+      if (info.style.display === 'block') {
+        info.style.display = 'none';
+        btn.textContent = '› More info';
+      } else {
+        info.style.display = 'block';
+        btn.textContent = '‹ Less info';
+      }
+    }
+    window.toggleMoreInfo = toggleMoreInfo;
+
+    async function renderSchedule() {
+      const container = document.getElementById('scheduleContainer');
+      const data = await fetchSchedule();
+      container.innerHTML = '';
+      if (!data.length) {
+        container.innerHTML = `<div class='empty'>No upcoming bookings found.</div>`;
+        return;
+      }
+      // Group by date
+      const grouped = {};
+      data.forEach(b => {
+        const date = b.date || 'Unknown';
+        if (!grouped[date]) grouped[date] = [];
+        grouped[date].push(b);
+      });
+      Object.keys(grouped).sort().forEach(date => {
+        const header = document.createElement('div');
+        header.className = 'date-header';
+        header.textContent = formatDate(date);
+        container.appendChild(header);
+        grouped[date].forEach(booking => {
+          container.appendChild(createCard(booking));
+        });
+      });
+    }
+    renderSchedule();
+  </script>
+</body>
+</html> 

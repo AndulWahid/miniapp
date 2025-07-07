@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booked slots</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #f8f9fb;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 420px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 32px 24px 24px 24px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 18px;
+      font-weight: 700;
+      color: #222;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #444;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 18px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #f5f6fa;
+      transition: border 0.2s;
+    }
+    input:focus, textarea:focus {
+      border: 1.5px solid #007aff;
+      outline: none;
+    }
+    .additional-info {
+      margin-bottom: 18px;
+    }
+    .toggle-info {
+      background: #f5f6fa;
+      border: none;
+      color: #888;
+      font-size: 1rem;
+      padding: 8px 0;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      margin-bottom: 0;
+    }
+    .submit-btn {
+      width: 100%;
+      background: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .submit-btn:hover {
+      background: #005ecb;
+    }
+    .success, .error {
+      margin-top: 12px;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .success { color: #2ecc40; }
+    .error { color: #e74c3c; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Booked slots</h1>
+    <form id="slotForm">
+      <label for="from">FROM:</label>
+      <input type="time" id="from" name="from" required>
+      <label for="to">TO:</label>
+      <input type="time" id="to" name="to" required>
+      <div class="additional-info">
+        <button type="button" class="toggle-info" onclick="toggleInfo()">&#9654; Additional info</button>
+        <textarea id="info" name="info" style="display:none;" placeholder="Optional notes..."></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Add slot</button>
+      <div id="result"></div>
+    </form>
+  </div>
+  <script>
+    function toggleInfo() {
+      const info = document.getElementById('info');
+      info.style.display = info.style.display === 'none' ? 'block' : 'none';
+    }
+    document.getElementById('slotForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const from = document.getElementById('from').value;
+      const to = document.getElementById('to').value;
+      const info = document.getElementById('info').value;
+      const result = document.getElementById('result');
+      result.textContent = '';
+      try {
+        const res = await fetch('/api/booked_slot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from, to, info })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          result.textContent = 'Slot added!';
+          result.className = 'success';
+          document.getElementById('slotForm').reset();
+        } else {
+          result.textContent = data.error || 'Error adding slot.';
+          result.className = 'error';
+        }
+      } catch (err) {
+        result.textContent = 'Network error.';
+        result.className = 'error';
+      }
+    }
+  </script>
+</body>
+</html> 

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BL account</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #f8f9fb;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 420px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 32px 24px 24px 24px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 18px;
+      font-weight: 700;
+      color: #222;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #444;
+    }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 18px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #f5f6fa;
+      transition: border 0.2s;
+    }
+    input:focus {
+      border: 1.5px solid #007aff;
+      outline: none;
+    }
+    .submit-btn {
+      width: 100%;
+      background: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .submit-btn:hover {
+      background: #005ecb;
+    }
+    .success, .error {
+      margin-top: 12px;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .success { color: #2ecc40; }
+    .error { color: #e74c3c; }
+    .password-toggle {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-toggle input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .toggle-btn {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>BL account</h1>
+    <form id="blForm">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" placeholder="Please enter email" required>
+      <label for="password">Password:</label>
+      <div class="password-toggle">
+        <input type="password" id="password" name="password" placeholder="Password" required>
+        <button type="button" class="toggle-btn" onclick="togglePassword()">👁️</button>
+      </div>
+      <button type="submit" class="submit-btn">Save account</button>
+      <div id="result"></div>
+    </form>
+  </div>
+  <script>
+    function togglePassword() {
+      const pwd = document.getElementById('password');
+      pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    }
+    document.getElementById('blForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const result = document.getElementById('result');
+      result.textContent = '';
+      try {
+        const res = await fetch('/api/bl_account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          result.textContent = 'Account saved!';
+          result.className = 'success';
+          document.getElementById('blForm').reset();
+        } else {
+          result.textContent = data.error || 'Error saving account.';
+          result.className = 'error';
+        }
+      } catch (err) {
+        result.textContent = 'Network error.';
+        result.className = 'error';
+      }
+    }
+  </script>
+</body>
+</html> 
