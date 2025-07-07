@@ -82,15 +82,15 @@
     .success { color: #2ecc40; }
     .error { color: #e74c3c; }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
   <div class="container">
     <h1>Booked slots</h1>
     <form id="slotForm">
-      <label for="from">FROM:</label>
-      <input type="time" id="from" name="from" required>
-      <label for="to">TO:</label>
-      <input type="time" id="to" name="to" required>
+      <label for="slot-datetime"><b>Date & Time</b></label>
+      <input type="text" id="slot-datetime" placeholder="Select date and time" readonly style="width: 100%; padding: 10px; font-size: 16px; margin-bottom: 16px;">
       <div class="additional-info">
         <button type="button" class="toggle-info" onclick="toggleInfo()">&#9654; Additional info</button>
         <textarea id="info" name="info" style="display:none;" placeholder="Optional notes..."></textarea>
@@ -106,8 +106,7 @@
     }
     document.getElementById('slotForm').onsubmit = async function(e) {
       e.preventDefault();
-      const from = document.getElementById('from').value;
-      const to = document.getElementById('to').value;
+      const slotDateTime = document.getElementById('slot-datetime').value;
       const info = document.getElementById('info').value;
       const result = document.getElementById('result');
       result.textContent = '';
@@ -115,7 +114,7 @@
         const res = await fetch('/api/booked_slot', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from, to, info })
+          body: JSON.stringify({ slotDateTime, info })
         });
         const data = await res.json();
         if (res.ok) {
@@ -131,6 +130,11 @@
         result.className = 'error';
       }
     }
+    flatpickr("#slot-datetime", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today"
+    });
   </script>
 </body>
 </html> 
