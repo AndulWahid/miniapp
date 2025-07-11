@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Filters</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f9fb; margin: 0; padding: 0; }
+    .container { max-width: 420px; margin: 0 auto; padding: 24px 12px; background: #fff; border-radius: 16px; box-shadow: 0 2px 12px #0001; margin-top: 24px; }
+    h2 { text-align: center; margin-bottom: 18px; }
+    .filter-group { margin-bottom: 24px; }
+    .filter-label { font-weight: 500; margin-bottom: 6px; display: block; }
+    .switch-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .switch-label { font-size: 1rem; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 24px; transition: .3s; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
+    input:checked + .slider { background: #4f8cff; }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .gap-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .gap-label { font-size: 1rem; }
+    .gap-input { width: 80px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+    .update-btn { width: 100%; background: #4f8cff; color: #fff; border: none; border-radius: 8px; padding: 14px 0; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 10px; transition: background .2s; }
+    .update-btn:active { background: #2563eb; }
+    .result { text-align: center; margin-top: 16px; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Custom Filters</h2>
+    <div class="filter-group">
+      <div class="switch-row">
+        <span class="switch-label">MIA Pickup State</span>
+        <label class="switch">
+          <input type="checkbox" id="miaPickup">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="switch-row">
+        <span class="switch-label">MIA Dropoff State</span>
+        <label class="switch">
+          <input type="checkbox" id="miaDropoff">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="switch-row">
+        <span class="switch-label">Orlando Pickup State</span>
+        <label class="switch">
+          <input type="checkbox" id="orlPickup">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="switch-row">
+        <span class="switch-label">Orlando Dropoff State</span>
+        <label class="switch">
+          <input type="checkbox" id="orlDropoff">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="gap-row">
+      <span class="gap-label">Global Gap (min):</span>
+      <input type="number" id="gap" class="gap-input" min="0" step="1" value="0">
+    </div>
+    <button class="update-btn" onclick="updateFilters()">Update all custom filters</button>
+    <div class="result" id="result"></div>
+  </div>
+  <script>
+    async function updateFilters() {
+      const miaPickup = document.getElementById('miaPickup').checked;
+      const miaDropoff = document.getElementById('miaDropoff').checked;
+      const orlPickup = document.getElementById('orlPickup').checked;
+      const orlDropoff = document.getElementById('orlDropoff').checked;
+      const gap = parseInt(document.getElementById('gap').value, 10) || 0;
+      const result = document.getElementById('result');
+      result.textContent = '';
+      try {
+        const res = await fetch('/api/custom_filters', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mia_pickup_active: miaPickup,
+            mia_dropoff_active: miaDropoff,
+            orl_pickup_active: orlPickup,
+            orl_dropoff_active: orlDropoff,
+            gap_minutes: gap
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          result.textContent = '✅ Filters updated!';
+          result.style.color = '#22c55e';
+        } else {
+          result.textContent = data.error || 'Error updating filters.';
+          result.style.color = '#ef4444';
+        }
+      } catch (err) {
+        result.textContent = 'Network error.';
+        result.style.color = '#ef4444';
+      }
+    }
+  </script>
+</body>
+</html> 
