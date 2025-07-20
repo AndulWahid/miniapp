@@ -89,8 +89,12 @@
   <div class="container">
     <h1>Booked slots</h1>
     <form id="slotForm">
-      <label for="slot-datetime"><b>Date & Time</b></label>
-      <input type="text" id="slot-datetime" placeholder="Select date and time" readonly style="width: 100%; padding: 10px; font-size: 16px; margin-bottom: 16px;">
+      <!-- <label for="slot-datetime"><b>Date & Time</b></label>
+      <input type="text" id="slot-datetime" placeholder="Select date and time" readonly style="width: 100%; padding: 10px; font-size: 16px; margin-bottom: 16px;"> -->
+      <label for="slot-start"><b>Start Date & Time</b></label>
+      <input type="text" id="slot-start" placeholder="Select start date and time" readonly style="width: 100%; padding: 10px; font-size: 16px; margin-bottom: 16px;">
+      <label for="slot-end"><b>End Date & Time</b></label>
+      <input type="text" id="slot-end" placeholder="Select end date and time" readonly style="width: 100%; padding: 10px; font-size: 16px; margin-bottom: 16px;">
       <div class="additional-info">
         <button type="button" class="toggle-info" onclick="toggleInfo()">&#9654; Additional info</button>
         <textarea id="info" name="info" style="display:none;" placeholder="Optional notes..."></textarea>
@@ -106,7 +110,9 @@
     }
     document.getElementById('slotForm').onsubmit = async function(e) {
       e.preventDefault();
-      const slotDateTime = document.getElementById('slot-datetime').value;
+      // const slotDateTime = document.getElementById('slot-datetime').value;
+      const slotStart = document.getElementById('slot-start').value;
+      const slotEnd = document.getElementById('slot-end').value;
       const info = document.getElementById('info').value;
       const result = document.getElementById('result');
       result.textContent = '';
@@ -114,7 +120,7 @@
         const res = await fetch('/api/booked_slot', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slotDateTime, info })
+          body: JSON.stringify({ slotStart, slotEnd, info })
         });
         const data = await res.json();
         if (res.ok) {
@@ -134,6 +140,11 @@
         enableTime: true,
         dateFormat: "Y-m-d H:i",
         minDate: "today"
+    });
+    flatpickr("#slot-end", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today"
     });
   </script>
 </body>
