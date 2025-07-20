@@ -120,7 +120,7 @@
         const res = await fetch('/api/booked_slot', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slotStart, slotEnd, info })
+          body: JSON.stringify({ from: slotStart, to: slotEnd, info })
         });
         const data = await res.json();
         if (res.ok) {
@@ -136,11 +136,14 @@
         result.className = 'error';
       }
     }
-    flatpickr("#slot-datetime", {
+    // Initialize flatpickr for start time
+    flatpickr("#slot-start", {
         enableTime: true,
         dateFormat: "Y-m-d H:i",
         minDate: "today"
     });
+    
+    // Initialize flatpickr for end time
     flatpickr("#slot-end", {
       enableTime: true,
       dateFormat: "Y-m-d H:i",
