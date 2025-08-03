@@ -333,27 +333,31 @@
          return;
        }
        
-       try {
-         // Initialize GitHub API
-         window.initGitHubAPI(token, owner, repo);
-         
-         // Test the connection
-         const filters = await window.githubAPI.getCustomFilters();
-         
-         status.textContent = '✅ GitHub connected successfully!';
-         status.style.color = '#28a745';
-         
-         // Save credentials to localStorage
-         localStorage.setItem('githubConfig', JSON.stringify({ token, owner, repo }));
-         
-         // Reload filters from GitHub
-         await loadFilters();
-         
-       } catch (error) {
-         status.textContent = '❌ GitHub connection failed. Check your credentials.';
-         status.style.color = '#dc3545';
-         console.error('GitHub setup error:', error);
-       }
+             try {
+        // Initialize GitHub API
+        const api = window.initGitHubAPI(token, owner, repo);
+        
+        if (!api) {
+          throw new Error('Failed to initialize GitHub API');
+        }
+        
+        // Test the connection
+        const filters = await api.getCustomFilters();
+        
+        status.textContent = '✅ GitHub connected successfully!';
+        status.style.color = '#28a745';
+        
+        // Save credentials to localStorage
+        localStorage.setItem('githubConfig', JSON.stringify({ token, owner, repo }));
+        
+        // Reload filters from GitHub
+        await loadFilters();
+        
+      } catch (error) {
+        status.textContent = '❌ GitHub connection failed. Check your credentials.';
+        status.style.color = '#dc3545';
+        console.error('GitHub setup error:', error);
+      }
      }
      
      // Load GitHub config on page load
