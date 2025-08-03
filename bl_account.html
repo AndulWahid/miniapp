@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BL account</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
       font-family: 'Inter', Arial, sans-serif;
@@ -104,6 +105,11 @@
     </form>
   </div>
   <script>
+    // Initialize Telegram Web App
+    let tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    
     function togglePassword() {
       const pwd = document.getElementById('password');
       pwd.type = pwd.type === 'password' ? 'text' : 'password';
@@ -125,6 +131,10 @@
           result.textContent = 'Account saved!';
           result.className = 'success';
           document.getElementById('blForm').reset();
+          // Show success message and close web app after a delay
+          setTimeout(() => {
+            tg.close();
+          }, 2000);
         } else {
           result.textContent = data.error || 'Error saving account.';
           result.className = 'error';
