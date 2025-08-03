@@ -152,8 +152,28 @@
       <button type="submit" class="submit-btn">Add slot</button>
       <div id="result"></div>
     </form>
+    
+    <!-- GitHub Setup Section -->
+    <div style="margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+      <h3 style="margin: 0 0 12px 0; font-size: 1.1rem; color: #495057;">🔧 GitHub Integration Setup</h3>
+      <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #6c757d;">
+        For direct updates to your bot, enter your GitHub details:
+      </p>
+      <div style="margin-bottom: 8px;">
+        <input type="text" id="githubToken" placeholder="GitHub Personal Access Token" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px;">
+      </div>
+      <div style="margin-bottom: 8px;">
+        <input type="text" id="githubOwner" placeholder="GitHub Username" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px;">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <input type="text" id="githubRepo" placeholder="Repository Name" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px;">
+      </div>
+      <button onclick="setupGitHub()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Connect GitHub</button>
+      <div id="githubStatus" style="margin-top: 8px; font-size: 12px;"></div>
+    </div>
   </div>
 
+  <script src="github-api.js"></script>
   <script>
     function toggleInfo() {
       const info = document.getElementById('info');
@@ -182,7 +202,33 @@
       }
       
       try {
-        // Save to localStorage for now (since we don't have backend)
+        let updateMethod = 'localStorage';
+        
+        // Try GitHub API if available
+        if (window.githubAPI) {
+          try {
+            // Get existing slots from GitHub
+            const existingSlots = await window.githubAPI.getBookedSlots();
+            const newSlot = {
+              from: slotStart,
+              to: slotEnd,
+              info: info,
+              id: Date.now()
+            };
+            
+            // Add new slot
+            existingSlots.push(newSlot);
+            
+            // Update GitHub
+            await window.githubAPI.updateBookedSlots(existingSlots);
+            updateMethod = 'GitHub';
+            console.log('Slot added via GitHub API');
+          } catch (githubError) {
+            console.log('GitHub update failed, using localStorage:', githubError);
+          }
+        }
+        
+        // Always save to localStorage as backup
         const newSlot = {
           from: slotStart,
           to: slotEnd,
@@ -190,12 +236,15 @@
           id: Date.now()
         };
         
-        // Get existing slots
         const existingSlots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
         existingSlots.push(newSlot);
         localStorage.setItem('bookedSlots', JSON.stringify(existingSlots));
         
-        result.textContent = 'Slot added successfully!';
+        const successMessage = updateMethod === 'GitHub' 
+          ? 'Slot added successfully to GitHub!' 
+          : 'Slot added successfully!';
+        
+        result.textContent = successMessage;
         result.className = 'success';
         document.getElementById('slotForm').reset();
         
@@ -223,6 +272,53 @@
       dateFormat: "Y-m-d H:i",
       minDate: "today",
       time_24hr: true
+    });
+    
+    // GitHub setup function
+    async function setupGitHub() {
+      const token = document.getElementById('githubToken').value;
+      const owner = document.getElementById('githubOwner').value;
+      const repo = document.getElementById('githubRepo').value;
+      const status = document.getElementById('githubStatus');
+      
+      if (!token || !owner || !repo) {
+        status.textContent = 'Please fill in all GitHub fields.';
+        status.style.color = '#dc3545';
+        return;
+      }
+      
+      try {
+        // Initialize GitHub API
+        window.initGitHubAPI(token, owner, repo);
+        
+        // Test the connection
+        const slots = await window.githubAPI.getBookedSlots();
+        
+        status.textContent = '✅ GitHub connected successfully!';
+        status.style.color = '#28a745';
+        
+        // Save credentials to localStorage
+        localStorage.setItem('githubConfig', JSON.stringify({ token, owner, repo }));
+        
+      } catch (error) {
+        status.textContent = '❌ GitHub connection failed. Check your credentials.';
+        status.style.color = '#dc3545';
+        console.error('GitHub setup error:', error);
+      }
+    }
+    
+    // Load GitHub config on page load
+    window.addEventListener('load', function() {
+      const savedConfig = localStorage.getItem('githubConfig');
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        document.getElementById('githubToken').value = config.token;
+        document.getElementById('githubOwner').value = config.owner;
+        document.getElementById('githubRepo').value = config.repo;
+        
+        // Auto-connect if credentials are saved
+        setupGitHub();
+      }
     });
   </script>
 </body>
