@@ -150,23 +150,43 @@
     <div class="result" id="result"></div>
   </div>
   <script>
-    // Set default values when page loads
-    function loadFilters() {
-      try {
-        // Set all checkboxes to checked (ON) by default
-        document.getElementById('laxPickup').checked = true;
-        document.getElementById('laxDropoff').checked = true;
-        document.getElementById('mondayTransfer').checked = true;
-        document.getElementById('tuesdayTransfer').checked = true;
-        document.getElementById('wednesdayTransfer').checked = true;
-        document.getElementById('thursdayTransfer').checked = true;
-        document.getElementById('fridayTransfer').checked = true;
-        document.getElementById('saturdayTransfer').checked = true;
-        document.getElementById('sundayTransfer').checked = true;
-      } catch (err) {
-        console.error('Error loading filters:', err);
-      }
-    }
+         // Load current filter settings from bot
+     async function loadFilters() {
+       try {
+                   // Try to get current settings from Vercel API
+          const response = await fetch('/api/get_filters');
+         if (response.ok) {
+           const data = await response.json();
+           if (data.success && data.filters) {
+             // Set checkboxes based on current bot settings
+             document.getElementById('laxPickup').checked = data.filters.lax_pickup_active;
+             document.getElementById('laxDropoff').checked = data.filters.lax_dropoff_active;
+             document.getElementById('mondayTransfer').checked = data.filters.monday_transfer_active;
+             document.getElementById('tuesdayTransfer').checked = data.filters.tuesday_transfer_active;
+             document.getElementById('wednesdayTransfer').checked = data.filters.wednesday_transfer_active;
+             document.getElementById('thursdayTransfer').checked = data.filters.thursday_transfer_active;
+             document.getElementById('fridayTransfer').checked = data.filters.friday_transfer_active;
+             document.getElementById('saturdayTransfer').checked = data.filters.saturday_transfer_active;
+             document.getElementById('sundayTransfer').checked = data.filters.sunday_transfer_active;
+             console.log('Loaded current filter settings from bot');
+             return;
+           }
+         }
+       } catch (err) {
+         console.log('Could not load from bot API, using defaults');
+       }
+       
+       // Fallback to default values
+       document.getElementById('laxPickup').checked = true;
+       document.getElementById('laxDropoff').checked = true;
+       document.getElementById('mondayTransfer').checked = true;
+       document.getElementById('tuesdayTransfer').checked = true;
+       document.getElementById('wednesdayTransfer').checked = true;
+       document.getElementById('thursdayTransfer').checked = true;
+       document.getElementById('fridayTransfer').checked = true;
+       document.getElementById('saturdayTransfer').checked = true;
+       document.getElementById('sundayTransfer').checked = true;
+     }
     
     // Load filters when page loads
     loadFilters();
@@ -198,22 +218,49 @@
            sunday_transfer_active: sundayTransfer
          };
          
-                                     // Show the filter data to user for manual sync
-              const filterData = JSON.stringify(filters, null, 2);
-              result.innerHTML = `
-                <div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                  <strong>✅ Filters updated!</strong><br>
-                  <strong>Copy this data to update your bot:</strong><br>
-                  <code style="background: #e9ecef; padding: 5px; border-radius: 4px; display: block; margin: 10px 0; font-size: 12px; white-space: pre-wrap;">${filterData}</code>
-                  <strong>Instructions:</strong><br>
-                  <ol style="text-align: left; margin: 10px 0;">
-                    <li>Copy the JSON data above</li>
-                    <li>Update <code>src/booked_slots/custom_filters.json</code></li>
-                    <li>Restart your bot</li>
-                  </ol>
-                </div>
-              `;
-              result.style.color = '#22c55e';
+                                     // Try to update directly via bot API
+              try {
+                                 const apiResponse = await fetch('/api/update_filters_direct', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ filters: filters })
+                });
+                
+                if (apiResponse.ok) {
+                  const responseData = await apiResponse.json();
+                  if (responseData.success) {
+                    result.innerHTML = `
+                      <div style="text-align: center; background: #d1fae5; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                        <strong>✅ Filters updated directly!</strong><br>
+                        <span style="font-size: 0.9rem; color: #065f46;">Your bot's settings have been updated automatically.</span>
+                      </div>
+                    `;
+                    result.style.color = '#22c55e';
+                  } else {
+                    throw new Error(responseData.error || 'Update failed');
+                  }
+                } else {
+                  throw new Error('API request failed');
+                }
+              } catch (apiError) {
+                console.log('Direct update failed:', apiError);
+                // Fallback to manual sync
+                const filterData = JSON.stringify(filters, null, 2);
+                result.innerHTML = `
+                  <div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                    <strong>⚠️ Direct update failed</strong><br>
+                    <strong>Copy this data to update your bot manually:</strong><br>
+                    <code style="background: #e9ecef; padding: 5px; border-radius: 4px; display: block; margin: 10px 0; font-size: 12px; white-space: pre-wrap;">${filterData}</code>
+                    <strong>Instructions:</strong><br>
+                    <ol style="text-align: left; margin: 10px 0;">
+                      <li>Copy the JSON data above</li>
+                      <li>Update <code>src/booked_slots/custom_filters.json</code></li>
+                      <li>Restart your bot</li>
+                    </ol>
+                  </div>
+                `;
+                result.style.color = '#f59e0b';
+              }
               
               // Also try to send to Telegram Bot via Web App API
               if (window.Telegram && window.Telegram.WebApp) {
