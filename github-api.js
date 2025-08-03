@@ -134,8 +134,15 @@ let githubAPI = null;
 
 // Initialize GitHub API
 function initGitHubAPI(token, owner, repo, branch = 'main') {
-    githubAPI = new GitHubAPI(token, owner, repo, branch);
-    console.log('GitHub API initialized');
+    try {
+        githubAPI = new GitHubAPI(token, owner, repo, branch);
+        window.githubAPI = githubAPI; // Ensure it's set on window
+        console.log('GitHub API initialized successfully');
+        return githubAPI;
+    } catch (error) {
+        console.error('Failed to initialize GitHub API:', error);
+        return null;
+    }
 }
 
 // Export for use in other files
