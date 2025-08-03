@@ -5,7 +5,7 @@
   "tuesday_transfer_active": true,
   "wednesday_transfer_active": false,
   "thursday_transfer_active": true,
-  "friday_transfer_active": true,
-  "saturday_transfer_active": true,
-  "sunday_transfer_active": true
+  "friday_transfer_active": false,
+  "saturday_transfer_active": false,
+  "sunday_transfer_active": false
 }
