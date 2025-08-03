@@ -268,6 +268,8 @@
                    try {
                      console.log('Attempting to update GitHub...');
                      console.log('Filters to update:', filters);
+                     
+                     // Try to create/update the file (GitHub API handles both create and update)
                      const result = await window.githubAPI.updateCustomFilters(filters);
                      console.log('GitHub update result:', result);
                      updateMethod = 'GitHub';
@@ -275,7 +277,6 @@
                    } catch (githubError) {
                      console.log('GitHub update failed, using localStorage:', githubError);
                      console.log('Error details:', githubError.message);
-                     console.log('Error stack:', githubError.stack);
                    }
                  } else {
                    console.log('GitHub API not available, using localStorage');
