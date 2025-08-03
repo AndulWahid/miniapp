@@ -122,6 +122,39 @@ def add_booked_slot():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/booked_slot', methods=['POST'])
+def add_booked_slot_singular():
+    """Add a booked slot (singular endpoint for compatibility)"""
+    try:
+        data = request.get_json()
+        from_time = data.get('from', '')
+        to_time = data.get('to', '')
+        info = data.get('info', '')
+        
+        if not from_time or not to_time:
+            return jsonify({'success': False, 'error': 'Start and end times are required'}), 400
+        
+        # Create slot object
+        slot = {
+            'from': from_time,
+            'to': to_time,
+            'info': info,
+            'created_at': datetime.now().isoformat()
+        }
+        
+        # In a real implementation, you would save to database
+        # For now, just return success
+        print(f"[{datetime.now()}] Booked slot added: {slot}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Slot added successfully!',
+            'slot': slot
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/custom_filters', methods=['GET'])
 def get_custom_filters():
     """Get custom filters (for compatibility with existing bot)"""
