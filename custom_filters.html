@@ -151,13 +151,30 @@
   </div>
   <script>
     // Load current filter values when page loads
-    async function loadFilters() {
+    function loadFilters() {
       try {
-        const res = await fetch('/api/custom_filters', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await res.json();
+        // Try to load from localStorage first
+        const savedFilters = localStorage.getItem('customFilters');
+        let data;
+        
+        if (savedFilters) {
+          data = JSON.parse(savedFilters);
+        } else {
+          // Default values
+          data = {
+            "lax_pickup_active": true,
+            "lax_dropoff_active": true,
+            "monday_transfer_active": true,
+            "tuesday_transfer_active": true,
+            "wednesday_transfer_active": true,
+            "thursday_transfer_active": true,
+            "friday_transfer_active": true,
+            "saturday_transfer_active": true,
+            "sunday_transfer_active": true
+          };
+          // Save defaults to localStorage
+          localStorage.setItem('customFilters', JSON.stringify(data));
+        }
         
         // Set checkbox values
         document.getElementById('laxPickup').checked = data.lax_pickup_active || false;
@@ -177,7 +194,7 @@
     // Load filters when page loads
     loadFilters();
     
-    async function updateFilters() {
+    function updateFilters() {
       const laxPickup = document.getElementById('laxPickup').checked;
       const laxDropoff = document.getElementById('laxDropoff').checked;
       const mondayTransfer = document.getElementById('mondayTransfer').checked;
@@ -189,32 +206,27 @@
       const sundayTransfer = document.getElementById('sundayTransfer').checked;
       const result = document.getElementById('result');
       result.textContent = '';
+      
       try {
-        const res = await fetch('/api/custom_filters', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lax_pickup_active: laxPickup,
-            lax_dropoff_active: laxDropoff,
-            monday_transfer_active: mondayTransfer,
-            tuesday_transfer_active: tuesdayTransfer,
-            wednesday_transfer_active: wednesdayTransfer,
-            thursday_transfer_active: thursdayTransfer,
-            friday_transfer_active: fridayTransfer,
-            saturday_transfer_active: saturdayTransfer,
-            sunday_transfer_active: sundayTransfer
-          })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          result.textContent = '✅ Filters updated!';
-          result.style.color = '#22c55e';
-        } else {
-          result.textContent = data.error || 'Error updating filters.';
-          result.style.color = '#ef4444';
-        }
+        // Save to localStorage
+        const filters = {
+          lax_pickup_active: laxPickup,
+          lax_dropoff_active: laxDropoff,
+          monday_transfer_active: mondayTransfer,
+          tuesday_transfer_active: tuesdayTransfer,
+          wednesday_transfer_active: wednesdayTransfer,
+          thursday_transfer_active: thursdayTransfer,
+          friday_transfer_active: fridayTransfer,
+          saturday_transfer_active: saturdayTransfer,
+          sunday_transfer_active: sundayTransfer
+        };
+        
+        localStorage.setItem('customFilters', JSON.stringify(filters));
+        
+        result.textContent = '✅ Filters updated!';
+        result.style.color = '#22c55e';
       } catch (err) {
-        result.textContent = 'Network error.';
+        result.textContent = 'Error updating filters.';
         result.style.color = '#ef4444';
       }
     }
