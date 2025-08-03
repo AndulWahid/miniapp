@@ -3,261 +3,227 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Filters</title>
+  <title>Booked Slots</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f9fb; margin: 0; padding: 0; }
-    .container { max-width: 420px; margin: 0 auto; padding: 24px 12px; background: #fff; border-radius: 16px; box-shadow: 0 2px 12px #0001; margin-top: 24px; }
-    .header { text-align: center; margin-bottom: 18px; }
-    .header-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 2px; }
-    .header-desc { font-size: 1rem; color: #888; margin-bottom: 18px; }
-    h2 { text-align: center; margin-bottom: 18px; font-size: 2rem; }
-    .filter-group { margin-bottom: 24px; }
-    .filter-label { font-weight: 500; margin-bottom: 6px; display: block; }
-    .switch-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
-    .switch-label { font-size: 1.1rem; font-weight: 500; }
-    .switch-desc { font-size: 0.98rem; color: #666; margin-top: 2px; margin-bottom: 0; }
-    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 24px; transition: .3s; }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-    input:checked + .slider { background: #4f8cff; }
-    input:checked + .slider:before { transform: translateX(20px); }
-    .update-btn { width: 100%; background: #4f8cff; color: #fff; border: none; border-radius: 8px; padding: 14px 0; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 10px; transition: background .2s; }
-    .update-btn:active { background: #2563eb; }
-    .result { text-align: center; margin-top: 16px; font-weight: 500; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8f9fb;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 24px 12px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px #0001;
+      margin-top: 24px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #1f2937;
+    }
+    .header-desc {
+      font-size: 1rem;
+      color: #6b7280;
+      margin-bottom: 0;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 1.8rem;
+      color: #1f2937;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #374151;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4f8cff;
+      box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.1);
+    }
+    .additional-info {
+      margin-bottom: 16px;
+    }
+    .toggle-info {
+      background: none;
+      border: none;
+      color: #4f8cff;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      margin-bottom: 8px;
+    }
+    .toggle-info:hover {
+      text-decoration: underline;
+    }
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 80px;
+      box-sizing: border-box;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #4f8cff;
+      box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.1);
+    }
+    .submit-btn {
+      width: 100%;
+      background: #4f8cff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .submit-btn:hover {
+      background: #2563eb;
+    }
+    .submit-btn:active {
+      background: #1d4ed8;
+    }
+    #result {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 500;
+    }
+    .success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-title">Custom filters</div>
-      <div class="header-desc">Setup custom filters</div>
+      <div class="header-title">Booked Slots</div>
+      <div class="header-desc">Add new booked time slots</div>
     </div>
-    <div class="filter-group">
-      <!-- LAX Filters Section -->
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">LAX Pickup State</div>
-            <div class="switch-desc">Activate/deactivate accepting rides FROM LAX. When active - bot will accept rides from Los Angeles airport.</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="laxPickup">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">LAX Dropoff State</div>
-            <div class="switch-desc">Activate/deactivate accepting rides TO LAX. When active - bot will accept rides to Los Angeles airport.</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="laxDropoff">
-            <span class="slider"></span>
-          </label>
-        </div>
+    
+    <form id="slotForm">
+      <label for="slot-start"><b>Start Date & Time</b></label>
+      <input type="text" id="slot-start" placeholder="Select start date and time" readonly>
+      
+      <label for="slot-end"><b>End Date & Time</b></label>
+      <input type="text" id="slot-end" placeholder="Select end date and time" readonly>
+      
+      <div class="additional-info">
+        <button type="button" class="toggle-info" onclick="toggleInfo()">&#9654; Additional info</button>
+        <textarea id="info" name="info" style="display:none;" placeholder="Optional notes..."></textarea>
       </div>
       
-      <!-- Daily Transfer Filters Section -->
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">Monday Transfer</div>
-            <div class="switch-desc">Activate/deactivate accepting transfer rides for Monday (active - bot will accept transfers on Monday, inactive - bot will only accept hourly rides on Monday)</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="mondayTransfer">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">Tuesday Transfer</div>
-            <div class="switch-desc">Activate/deactivate accepting transfer rides for Tuesday (active - bot will accept transfers on Tuesday, inactive - bot will only accept hourly rides on Tuesday)</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="tuesdayTransfer">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">Wednesday Transfer</div>
-            <div class="switch-desc">Activate/deactivate accepting transfer rides for Wednesday (active - bot will accept transfers on Wednesday, inactive - bot will only accept hourly rides on Wednesday)</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="wednesdayTransfer">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">Thursday Transfer</div>
-            <div class="switch-desc">Activate/deactivate accepting transfer rides for Thursday (active - bot will accept transfers on Thursday, inactive - bot will only accept hourly rides on Thursday)</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="thursdayTransfer">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">Friday Transfer</div>
-            <div class="switch-desc">Activate/deactivate accepting transfer rides for Friday (active - bot will accept transfers on Friday, inactive - bot will only accept hourly rides on Friday)</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="fridayTransfer">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">Saturday Transfer</div>
-            <div class="switch-desc">Activate/deactivate accepting transfer rides for Saturday (active - bot will accept transfers on Saturday, inactive - bot will only accept hourly rides on Saturday)</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="saturdayTransfer">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <div style="margin-bottom: 32px;">
-        <div class="switch-row">
-          <div>
-            <div class="switch-label">Sunday Transfer</div>
-            <div class="switch-desc">Activate/deactivate accepting transfer rides for Sunday (active - bot will accept transfers on Sunday, inactive - bot will only accept hourly rides on Sunday)</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="sundayTransfer">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-    <button class="update-btn" onclick="updateFilters()">Update all custom filters</button>
-    <div class="result" id="result"></div>
+      <button type="submit" class="submit-btn">Add slot</button>
+      <div id="result"></div>
+    </form>
   </div>
+
   <script>
-         // Load current filter settings from localStorage
-     function loadFilters() {
-       try {
-         // Try to get current settings from localStorage
-         const savedFilters = localStorage.getItem('botFilters');
-         if (savedFilters) {
-           const filters = JSON.parse(savedFilters);
-           // Set checkboxes based on saved settings
-           document.getElementById('laxPickup').checked = filters.lax_pickup_active;
-           document.getElementById('laxDropoff').checked = filters.lax_dropoff_active;
-           document.getElementById('mondayTransfer').checked = filters.monday_transfer_active;
-           document.getElementById('tuesdayTransfer').checked = filters.tuesday_transfer_active;
-           document.getElementById('wednesdayTransfer').checked = filters.wednesday_transfer_active;
-           document.getElementById('thursdayTransfer').checked = filters.thursday_transfer_active;
-           document.getElementById('fridayTransfer').checked = filters.friday_transfer_active;
-           document.getElementById('saturdayTransfer').checked = filters.saturday_transfer_active;
-           document.getElementById('sundayTransfer').checked = filters.sunday_transfer_active;
-           console.log('Loaded saved filter settings');
-           return;
-         }
-       } catch (err) {
-         console.log('Could not load saved filters, using defaults');
-       }
-       
-       // Fallback to default values (all ON)
-       document.getElementById('laxPickup').checked = true;
-       document.getElementById('laxDropoff').checked = true;
-       document.getElementById('mondayTransfer').checked = true;
-       document.getElementById('tuesdayTransfer').checked = true;
-       document.getElementById('wednesdayTransfer').checked = true;
-       document.getElementById('thursdayTransfer').checked = true;
-       document.getElementById('fridayTransfer').checked = true;
-       document.getElementById('saturdayTransfer').checked = true;
-       document.getElementById('sundayTransfer').checked = true;
-     }
+    function toggleInfo() {
+      const info = document.getElementById('info');
+      const button = document.querySelector('.toggle-info');
+      if (info.style.display === 'none') {
+        info.style.display = 'block';
+        button.innerHTML = '&#9660; Additional info';
+      } else {
+        info.style.display = 'none';
+        button.innerHTML = '&#9654; Additional info';
+      }
+    }
     
-    // Load filters when page loads
-    loadFilters();
-    
-    async function updateFilters() {
-      const laxPickup = document.getElementById('laxPickup').checked;
-      const laxDropoff = document.getElementById('laxDropoff').checked;
-      const mondayTransfer = document.getElementById('mondayTransfer').checked;
-      const tuesdayTransfer = document.getElementById('tuesdayTransfer').checked;
-      const wednesdayTransfer = document.getElementById('wednesdayTransfer').checked;
-      const thursdayTransfer = document.getElementById('thursdayTransfer').checked;
-      const fridayTransfer = document.getElementById('fridayTransfer').checked;
-      const saturdayTransfer = document.getElementById('saturdayTransfer').checked;
-      const sundayTransfer = document.getElementById('sundayTransfer').checked;
+    document.getElementById('slotForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const slotStart = document.getElementById('slot-start').value;
+      const slotEnd = document.getElementById('slot-end').value;
+      const info = document.getElementById('info').value;
       const result = document.getElementById('result');
       result.textContent = '';
       
-             try {
-         // Prepare filter data
-         const filters = {
-           lax_pickup_active: laxPickup,
-           lax_dropoff_active: laxDropoff,
-           monday_transfer_active: mondayTransfer,
-           tuesday_transfer_active: tuesdayTransfer,
-           wednesday_transfer_active: wednesdayTransfer,
-           thursday_transfer_active: thursdayTransfer,
-           friday_transfer_active: fridayTransfer,
-           saturday_transfer_active: saturdayTransfer,
-           sunday_transfer_active: sundayTransfer
-         };
-         
-                                     // Save to localStorage and show JSON data
-              try {
-                // Save filters to localStorage
-                localStorage.setItem('botFilters', JSON.stringify(filters));
-                
-                // Show the filter data to user for manual sync
-                const filterData = JSON.stringify(filters, null, 2);
-                result.innerHTML = `
-                  <div style="text-align: center; background: #d1fae5; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <strong>✅ Filters saved locally!</strong><br>
-                    <span style="font-size: 0.9rem; color: #065f46;">Settings saved to browser. Copy JSON below to update your bot.</span>
-                  </div>
-                  <div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <strong>Copy this data to update your bot:</strong><br>
-                    <code style="background: #e9ecef; padding: 5px; border-radius: 4px; display: block; margin: 10px 0; font-size: 12px; white-space: pre-wrap;">${filterData}</code>
-                    <strong>Instructions:</strong><br>
-                    <ol style="text-align: left; margin: 10px 0;">
-                      <li>Copy the JSON data above</li>
-                      <li>Update <code>src/booked_slots/custom_filters.json</code></li>
-                      <li>Restart your bot</li>
-                    </ol>
-                  </div>
-                `;
-                result.style.color = '#22c55e';
-              } catch (error) {
-                console.log('Save failed:', error);
-                result.textContent = 'Error saving filters.';
-                result.style.color = '#ef4444';
-              }
-              
-              // Also try to send to Telegram Bot via Web App API
-              if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({
-                  action: 'update_filters',
-                  filters: filters
-                }));
-              }
+      if (!slotStart || !slotEnd) {
+        result.textContent = 'Please select both start and end times.';
+        result.className = 'error';
+        return;
+      }
+      
+      try {
+        // Save to localStorage for now (since we don't have backend)
+        const newSlot = {
+          from: slotStart,
+          to: slotEnd,
+          info: info,
+          id: Date.now()
+        };
+        
+        // Get existing slots
+        const existingSlots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
+        existingSlots.push(newSlot);
+        localStorage.setItem('bookedSlots', JSON.stringify(existingSlots));
+        
+        result.textContent = 'Slot added successfully!';
+        result.className = 'success';
+        document.getElementById('slotForm').reset();
+        
+        // Reset the date pickers
+        startPicker.clear();
+        endPicker.clear();
+        
       } catch (err) {
-        result.textContent = 'Error updating filters.';
-        result.style.color = '#ef4444';
+        result.textContent = 'Error adding slot.';
+        result.className = 'error';
       }
     }
+    
+    // Initialize flatpickr for start time
+    const startPicker = flatpickr("#slot-start", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      time_24hr: true
+    });
+    
+    // Initialize flatpickr for end time
+    const endPicker = flatpickr("#slot-end", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      time_24hr: true
+    });
   </script>
 </body>
 </html> 
