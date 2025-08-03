@@ -1,0 +1,11 @@
+{
+  "lax_pickup_active": false,
+  "lax_dropoff_active": false,
+  "monday_transfer_active": true,
+  "tuesday_transfer_active": true,
+  "wednesday_transfer_active": false,
+  "thursday_transfer_active": true,
+  "friday_transfer_active": true,
+  "saturday_transfer_active": true,
+  "sunday_transfer_active": false
+}
