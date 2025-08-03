@@ -260,46 +260,45 @@
                 let updateMethod = 'localStorage';
                 
                 // Try GitHub API if available
-                if (window.githubAPI) {
-                  try {
-                    await window.githubAPI.updateCustomFilters(filters);
-                    updateMethod = 'GitHub';
-                    console.log('Filters updated via GitHub API');
-                  } catch (githubError) {
-                    console.log('GitHub update failed, using localStorage:', githubError);
-                  }
-                }
+                console.log('Checking GitHub API availability...');
+                console.log('window.githubAPI:', window.githubAPI);
+                console.log('window.GitHubAPI:', window.GitHubAPI);
+                
+                                 if (window.githubAPI) {
+                   try {
+                     console.log('Attempting to update GitHub...');
+                     console.log('Filters to update:', filters);
+                     const result = await window.githubAPI.updateCustomFilters(filters);
+                     console.log('GitHub update result:', result);
+                     updateMethod = 'GitHub';
+                     console.log('Filters updated via GitHub API');
+                   } catch (githubError) {
+                     console.log('GitHub update failed, using localStorage:', githubError);
+                     console.log('Error details:', githubError.message);
+                     console.log('Error stack:', githubError.stack);
+                   }
+                 } else {
+                   console.log('GitHub API not available, using localStorage');
+                 }
                 
                 // Always save to localStorage as backup
                 localStorage.setItem('botFilters', JSON.stringify(filters));
                 
                 // Show success message
                 const filterData = JSON.stringify(filters, null, 2);
-                const successMessage = updateMethod === 'GitHub' 
-                  ? '✅ Filters updated directly on GitHub!' 
-                  : '✅ Filters saved locally!';
-                const description = updateMethod === 'GitHub'
-                  ? 'Your bot will automatically use these settings.'
-                  : 'Settings saved to browser. Copy JSON below to update your bot.';
+                                 const successMessage = updateMethod === 'GitHub' 
+                   ? '✅ Filters updated successfully!' 
+                   : '✅ Filters saved locally!';
+                 const description = updateMethod === 'GitHub'
+                   ? 'Your bot will automatically use these settings.'
+                   : 'Settings saved to browser.';
                 
-                result.innerHTML = `
-                  <div style="text-align: center; background: #d1fae5; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <strong>${successMessage}</strong><br>
-                    <span style="font-size: 0.9rem; color: #065f46;">${description}</span>
-                  </div>
-                  ${updateMethod === 'localStorage' ? `
-                  <div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <strong>Copy this data to update your bot:</strong><br>
-                    <code style="background: #e9ecef; padding: 5px; border-radius: 4px; display: block; margin: 10px 0; font-size: 12px; white-space: pre-wrap;">${filterData}</code>
-                    <strong>Instructions:</strong><br>
-                    <ol style="text-align: left; margin: 10px 0;">
-                      <li>Copy the JSON data above</li>
-                      <li>Update <code>src/booked_slots/custom_filters.json</code></li>
-                      <li>Restart your bot</li>
-                    </ol>
-                  </div>
-                  ` : ''}
-                `;
+                                 result.innerHTML = `
+                   <div style="text-align: center; background: #d1fae5; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                     <strong>${successMessage}</strong><br>
+                     <span style="font-size: 0.9rem; color: #065f46;">${description}</span>
+                   </div>
+                 `;
                 result.style.color = '#22c55e';
               } catch (error) {
                 console.log('Save failed:', error);
@@ -341,11 +340,12 @@
           throw new Error('Failed to initialize GitHub API');
         }
         
-        // Test the connection
-        const filters = await api.getCustomFilters();
-        
-        status.textContent = '✅ GitHub connected successfully!';
-        status.style.color = '#28a745';
+                 // Test the connection
+         const filters = await api.getCustomFilters();
+         console.log('Test connection - filters from GitHub:', filters);
+         
+         status.textContent = '✅ GitHub connected successfully!';
+         status.style.color = '#28a745';
         
         // Save credentials to localStorage
         localStorage.setItem('githubConfig', JSON.stringify({ token, owner, repo }));
