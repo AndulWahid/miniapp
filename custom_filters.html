@@ -198,29 +198,30 @@
            sunday_transfer_active: sundayTransfer
          };
          
-         // Send to API endpoint
-        try {
-          const apiResponse = await fetch('/api/update_filters', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filters: filters })
-          });
-          
-          if (apiResponse.ok) {
-            // Also try to send to Telegram Bot via Web App API
-            if (window.Telegram && window.Telegram.WebApp) {
-              window.Telegram.WebApp.sendData(JSON.stringify({
-                action: 'update_filters',
-                filters: filters
-              }));
-            }
-          }
-        } catch (apiError) {
-          console.log('API call failed, but localStorage saved:', apiError);
-        }
-        
-        result.textContent = '✅ Filters updated and sent to bot!';
-        result.style.color = '#22c55e';
+                                     // Show the filter data to user for manual sync
+              const filterData = JSON.stringify(filters, null, 2);
+              result.innerHTML = `
+                <div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                  <strong>✅ Filters updated!</strong><br>
+                  <strong>Copy this data to update your bot:</strong><br>
+                  <code style="background: #e9ecef; padding: 5px; border-radius: 4px; display: block; margin: 10px 0; font-size: 12px; white-space: pre-wrap;">${filterData}</code>
+                  <strong>Instructions:</strong><br>
+                  <ol style="text-align: left; margin: 10px 0;">
+                    <li>Copy the JSON data above</li>
+                    <li>Update <code>src/booked_slots/custom_filters.json</code></li>
+                    <li>Restart your bot</li>
+                  </ol>
+                </div>
+              `;
+              result.style.color = '#22c55e';
+              
+              // Also try to send to Telegram Bot via Web App API
+              if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify({
+                  action: 'update_filters',
+                  filters: filters
+                }));
+              }
       } catch (err) {
         result.textContent = 'Error updating filters.';
         result.style.color = '#ef4444';
