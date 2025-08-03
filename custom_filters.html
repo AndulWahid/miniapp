@@ -34,14 +34,15 @@
       <div class="header-desc">Setup custom filters</div>
     </div>
     <div class="filter-group">
+      <!-- LAX Filters Section -->
       <div style="margin-bottom: 32px;">
         <div class="switch-row">
           <div>
-            <div class="switch-label">Mia Pickup State</div>
-            <div class="switch-desc">Activate/deactivate pickups from MIA. When not active - bot will not accept MIA pickup rides.</div>
+            <div class="switch-label">LAX Pickup State</div>
+            <div class="switch-desc">Activate/deactivate accepting rides FROM LAX. When active - bot will accept rides from Los Angeles airport.</div>
           </div>
           <label class="switch">
-            <input type="checkbox" id="miaPickup">
+            <input type="checkbox" id="laxPickup">
             <span class="slider"></span>
           </label>
         </div>
@@ -49,11 +50,25 @@
       <div style="margin-bottom: 32px;">
         <div class="switch-row">
           <div>
-            <div class="switch-label">Mia Dropoff State</div>
-            <div class="switch-desc">Activate/deactivate dropoffs to MIA. When not active - bot will not accept MIA dropoff rides.</div>
+            <div class="switch-label">LAX Dropoff State</div>
+            <div class="switch-desc">Activate/deactivate accepting rides TO LAX. When active - bot will accept rides to Los Angeles airport.</div>
           </div>
           <label class="switch">
-            <input type="checkbox" id="miaDropoff">
+            <input type="checkbox" id="laxDropoff">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Daily Transfer Filters Section -->
+      <div style="margin-bottom: 32px;">
+        <div class="switch-row">
+          <div>
+            <div class="switch-label">Monday Transfer</div>
+            <div class="switch-desc">Activate/deactivate accepting transfer rides for Monday (active - bot will accept transfers on Monday, inactive - bot will only accept hourly rides on Monday)</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="mondayTransfer">
             <span class="slider"></span>
           </label>
         </div>
@@ -61,11 +76,11 @@
       <div style="margin-bottom: 32px;">
         <div class="switch-row">
           <div>
-            <div class="switch-label">Orlando Pickup State</div>
-            <div class="switch-desc">Activate/deactivate pickups from Orlando. When not active - bot will not accept Orlando pickup rides.</div>
+            <div class="switch-label">Tuesday Transfer</div>
+            <div class="switch-desc">Activate/deactivate accepting transfer rides for Tuesday (active - bot will accept transfers on Tuesday, inactive - bot will only accept hourly rides on Tuesday)</div>
           </div>
           <label class="switch">
-            <input type="checkbox" id="orlPickup">
+            <input type="checkbox" id="tuesdayTransfer">
             <span class="slider"></span>
           </label>
         </div>
@@ -73,11 +88,59 @@
       <div style="margin-bottom: 32px;">
         <div class="switch-row">
           <div>
-            <div class="switch-label">Orlando Dropoff State</div>
-            <div class="switch-desc">Activate/deactivate dropoffs to Orlando. When not active - bot will not accept Orlando dropoff rides.</div>
+            <div class="switch-label">Wednesday Transfer</div>
+            <div class="switch-desc">Activate/deactivate accepting transfer rides for Wednesday (active - bot will accept transfers on Wednesday, inactive - bot will only accept hourly rides on Wednesday)</div>
           </div>
           <label class="switch">
-            <input type="checkbox" id="orlDropoff">
+            <input type="checkbox" id="wednesdayTransfer">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div style="margin-bottom: 32px;">
+        <div class="switch-row">
+          <div>
+            <div class="switch-label">Thursday Transfer</div>
+            <div class="switch-desc">Activate/deactivate accepting transfer rides for Thursday (active - bot will accept transfers on Thursday, inactive - bot will only accept hourly rides on Thursday)</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="thursdayTransfer">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div style="margin-bottom: 32px;">
+        <div class="switch-row">
+          <div>
+            <div class="switch-label">Friday Transfer</div>
+            <div class="switch-desc">Activate/deactivate accepting transfer rides for Friday (active - bot will accept transfers on Friday, inactive - bot will only accept hourly rides on Friday)</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="fridayTransfer">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div style="margin-bottom: 32px;">
+        <div class="switch-row">
+          <div>
+            <div class="switch-label">Saturday Transfer</div>
+            <div class="switch-desc">Activate/deactivate accepting transfer rides for Saturday (active - bot will accept transfers on Saturday, inactive - bot will only accept hourly rides on Saturday)</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="saturdayTransfer">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div style="margin-bottom: 32px;">
+        <div class="switch-row">
+          <div>
+            <div class="switch-label">Sunday Transfer</div>
+            <div class="switch-desc">Activate/deactivate accepting transfer rides for Sunday (active - bot will accept transfers on Sunday, inactive - bot will only accept hourly rides on Sunday)</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="sundayTransfer">
             <span class="slider"></span>
           </label>
         </div>
@@ -87,11 +150,43 @@
     <div class="result" id="result"></div>
   </div>
   <script>
+    // Load current filter values when page loads
+    async function loadFilters() {
+      try {
+        const res = await fetch('/api/custom_filters', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        
+        // Set checkbox values
+        document.getElementById('laxPickup').checked = data.lax_pickup_active || false;
+        document.getElementById('laxDropoff').checked = data.lax_dropoff_active || false;
+        document.getElementById('mondayTransfer').checked = data.monday_transfer_active || false;
+        document.getElementById('tuesdayTransfer').checked = data.tuesday_transfer_active || false;
+        document.getElementById('wednesdayTransfer').checked = data.wednesday_transfer_active || false;
+        document.getElementById('thursdayTransfer').checked = data.thursday_transfer_active || false;
+        document.getElementById('fridayTransfer').checked = data.friday_transfer_active || false;
+        document.getElementById('saturdayTransfer').checked = data.saturday_transfer_active || false;
+        document.getElementById('sundayTransfer').checked = data.sunday_transfer_active || false;
+      } catch (err) {
+        console.error('Error loading filters:', err);
+      }
+    }
+    
+    // Load filters when page loads
+    loadFilters();
+    
     async function updateFilters() {
-      const miaPickup = document.getElementById('miaPickup').checked;
-      const miaDropoff = document.getElementById('miaDropoff').checked;
-      const orlPickup = document.getElementById('orlPickup').checked;
-      const orlDropoff = document.getElementById('orlDropoff').checked;
+      const laxPickup = document.getElementById('laxPickup').checked;
+      const laxDropoff = document.getElementById('laxDropoff').checked;
+      const mondayTransfer = document.getElementById('mondayTransfer').checked;
+      const tuesdayTransfer = document.getElementById('tuesdayTransfer').checked;
+      const wednesdayTransfer = document.getElementById('wednesdayTransfer').checked;
+      const thursdayTransfer = document.getElementById('thursdayTransfer').checked;
+      const fridayTransfer = document.getElementById('fridayTransfer').checked;
+      const saturdayTransfer = document.getElementById('saturdayTransfer').checked;
+      const sundayTransfer = document.getElementById('sundayTransfer').checked;
       const result = document.getElementById('result');
       result.textContent = '';
       try {
@@ -99,10 +194,15 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            mia_pickup_active: miaPickup,
-            mia_dropoff_active: miaDropoff,
-            orl_pickup_active: orlPickup,
-            orl_dropoff_active: orlDropoff
+            lax_pickup_active: laxPickup,
+            lax_dropoff_active: laxDropoff,
+            monday_transfer_active: mondayTransfer,
+            tuesday_transfer_active: tuesdayTransfer,
+            wednesday_transfer_active: wednesdayTransfer,
+            thursday_transfer_active: thursdayTransfer,
+            friday_transfer_active: fridayTransfer,
+            saturday_transfer_active: saturdayTransfer,
+            sunday_transfer_active: sundayTransfer
           })
         });
         const data = await res.json();
