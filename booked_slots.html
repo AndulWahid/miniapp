@@ -171,155 +171,145 @@
       <button onclick="setupGitHub()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Connect GitHub</button>
       <div id="githubStatus" style="margin-top: 8px; font-size: 12px;"></div>
     </div>
-  </div>
-
-  <script src="github-api.js"></script>
-  <script>
-    function toggleInfo() {
-      const info = document.getElementById('info');
-      const button = document.querySelector('.toggle-info');
-      if (info.style.display === 'none') {
-        info.style.display = 'block';
-        button.innerHTML = '&#9660; Additional info';
-      } else {
-        info.style.display = 'none';
-        button.innerHTML = '&#9654; Additional info';
-      }
-    }
     
-    document.getElementById('slotForm').onsubmit = async function(e) {
-      e.preventDefault();
-      const slotStart = document.getElementById('slot-start').value;
-      const slotEnd = document.getElementById('slot-end').value;
-      const info = document.getElementById('info').value;
-      const result = document.getElementById('result');
-      result.textContent = '';
-      
-      if (!slotStart || !slotEnd) {
-        result.textContent = 'Please select both start and end times.';
-        result.className = 'error';
-        return;
+    <div class="container">
+      <div id="slots-list" style="margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+        <h3 style="margin: 0 0 12px 0; font-size: 1.1rem; color: #495057;">📅 Current Slots</h3>
+        <div id="slots-container"></div>
+      </div>
+    </div>
+
+    <script>
+      function toggleInfo() {
+        const info = document.getElementById('info');
+        const button = document.querySelector('.toggle-info');
+        if (info.style.display === 'none') {
+          info.style.display = 'block';
+          button.innerHTML = '&#9660; Additional info';
+        } else {
+          info.style.display = 'none';
+          button.innerHTML = '&#9654; Additional info';
+        }
       }
       
-      try {
-        let updateMethod = 'localStorage';
+      // Add this function to display slots
+      async function displaySlots() {
+        const slotsContainer = document.getElementById('slots-container');
+        slotsContainer.innerHTML = '';
         
-        // Try GitHub API if available
-        if (window.githubAPI) {
-          try {
-            // Get existing slots from GitHub
-            const existingSlots = await window.githubAPI.getBookedSlots();
-            const newSlot = {
-              from: slotStart,
-              to: slotEnd,
-              info: info,
-              id: Date.now()
-            };
+        try {
+            let slots = [];
+            if (window.githubAPI) {
+                slots = await window.githubAPI.getBookedSlots();
+            } else {
+                slots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
+            }
             
-            // Add new slot
-            existingSlots.push(newSlot);
+            slots.sort((a, b) => new Date(a.from) - new Date(b.from));
             
-            // Update GitHub
-            await window.githubAPI.updateBookedSlots(existingSlots);
-            updateMethod = 'GitHub';
-            console.log('Slot added via GitHub API');
-          } catch (githubError) {
-            console.log('GitHub update failed, using localStorage:', githubError);
-          }
+            slots.forEach(slot => {
+                const slotElement = document.createElement('div');
+                slotElement.style.padding = '8px';
+                slotElement.style.marginBottom = '8px';
+                slotElement.style.borderBottom = '1px solid #e9ecef';
+                slotElement.innerHTML = `
+                    <div style="font-weight: 500;">From: ${slot.from}</div>
+                    <div style="font-weight: 500;">To: ${slot.to}</div>
+                    ${slot.info ? `<div style="color: #6c757d; font-size: 0.9em;">${slot.info}</div>` : ''}
+                `;
+                slotsContainer.appendChild(slotElement);
+            });
+        } catch (error) {
+            console.error('Error displaying slots:', error);
+        }
+      }
+      
+      // Modify the form submission to refresh the display
+      document.getElementById('slotForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const slotStart = document.getElementById('slot-start').value;
+        const slotEnd = document.getElementById('slot-end').value;
+        const info = document.getElementById('info').value;
+        const result = document.getElementById('result');
+        result.textContent = '';
+        
+        if (!slotStart || !slotEnd) {
+          result.textContent = 'Please select both start and end times.';
+          result.className = 'error';
+          return;
         }
         
-        // Always save to localStorage as backup
-        const newSlot = {
-          from: slotStart,
-          to: slotEnd,
-          info: info,
-          id: Date.now()
-        };
-        
-        const existingSlots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
-        existingSlots.push(newSlot);
-        localStorage.setItem('bookedSlots', JSON.stringify(existingSlots));
-        
-        const successMessage = updateMethod === 'GitHub' 
-          ? 'Slot added successfully to GitHub!' 
-          : 'Slot added successfully!';
-        
-        result.textContent = successMessage;
-        result.className = 'success';
-        document.getElementById('slotForm').reset();
-        
-        // Reset the date pickers
-        startPicker.clear();
-        endPicker.clear();
-        
-      } catch (err) {
-        result.textContent = 'Error adding slot.';
-        result.className = 'error';
-      }
-    }
-    
-    // Initialize flatpickr for start time
-    const startPicker = flatpickr("#slot-start", {
-      enableTime: true,
-      dateFormat: "Y-m-d H:i",
-      minDate: "today",
-      time_24hr: true
-    });
-    
-    // Initialize flatpickr for end time
-    const endPicker = flatpickr("#slot-end", {
-      enableTime: true,
-      dateFormat: "Y-m-d H:i",
-      minDate: "today",
-      time_24hr: true
-    });
-    
-    // GitHub setup function
-    async function setupGitHub() {
-      const token = document.getElementById('githubToken').value;
-      const owner = document.getElementById('githubOwner').value;
-      const repo = document.getElementById('githubRepo').value;
-      const status = document.getElementById('githubStatus');
-      
-      if (!token || !owner || !repo) {
-        status.textContent = 'Please fill in all GitHub fields.';
-        status.style.color = '#dc3545';
-        return;
+        try {
+          let updateMethod = 'localStorage';
+          
+          // Try GitHub API if available
+          if (window.githubAPI) {
+            try {
+              // Get existing slots from GitHub
+              const existingSlots = await window.githubAPI.getBookedSlots();
+              const newSlot = {
+                from: slotStart,
+                to: slotEnd,
+                info: info,
+                id: Date.now()
+              };
+              
+              // Add new slot
+              existingSlots.push(newSlot);
+              
+              // Update GitHub
+              await window.githubAPI.updateBookedSlots(existingSlots);
+              updateMethod = 'GitHub';
+              console.log('Slot added via GitHub API');
+            } catch (githubError) {
+              console.log('GitHub update failed, using localStorage:', githubError);
+            }
+          }
+          
+          // Always save to localStorage as backup
+          const newSlot = {
+            from: slotStart,
+            to: slotEnd,
+            info: info,
+            id: Date.now()
+          };
+          
+          const existingSlots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
+          existingSlots.push(newSlot);
+          localStorage.setItem('bookedSlots', JSON.stringify(existingSlots));
+          
+          const successMessage = updateMethod === 'GitHub' 
+            ? 'Slot added successfully to GitHub!' 
+            : 'Slot added successfully!';
+          
+          result.textContent = successMessage;
+          result.className = 'success';
+          document.getElementById('slotForm').reset();
+          
+          // Reset the date pickers
+          startPicker.clear();
+          endPicker.clear();
+          
+        } catch (err) {
+          result.textContent = 'Error adding slot.';
+          result.className = 'error';
+        }
       }
       
-      try {
-        // Initialize GitHub API
-        window.initGitHubAPI(token, owner, repo);
-        
-        // Test the connection
-        const slots = await window.githubAPI.getBookedSlots();
-        
-        status.textContent = '✅ GitHub connected successfully!';
-        status.style.color = '#28a745';
-        
-        // Save credentials to localStorage
-        localStorage.setItem('githubConfig', JSON.stringify({ token, owner, repo }));
-        
-      } catch (error) {
-        status.textContent = '❌ GitHub connection failed. Check your credentials.';
-        status.style.color = '#dc3545';
-        console.error('GitHub setup error:', error);
-      }
-    }
-    
-    // Load GitHub config on page load
-    window.addEventListener('load', function() {
-      const savedConfig = localStorage.getItem('githubConfig');
-      if (savedConfig) {
-        const config = JSON.parse(savedConfig);
-        document.getElementById('githubToken').value = config.token;
-        document.getElementById('githubOwner').value = config.owner;
-        document.getElementById('githubRepo').value = config.repo;
-        
-        // Auto-connect if credentials are saved
-        setupGitHub();
-      }
-    });
-  </script>
+      // Display slots on page load
+      window.addEventListener('load', function() {
+        const savedConfig = localStorage.getItem('githubConfig');
+        if (savedConfig) {
+          const config = JSON.parse(savedConfig);
+          document.getElementById('githubToken').value = config.token;
+          document.getElementById('githubOwner').value = config.owner;
+          document.getElementById('githubRepo').value = config.repo;
+          
+          // Auto-connect if credentials are saved
+          setupGitHub();
+        }
+        displaySlots();
+      });
+    </script>
 </body>
-</html> 
+</html>
