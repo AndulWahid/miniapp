@@ -153,6 +153,12 @@
       <div id="result"></div>
     </form>
     
+    <!-- Slots Display Section -->
+    <div id="slots-list" style="margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+        <h3 style="margin: 0 0 12px 0; font-size: 1.1rem; color: #495057;">📅 Current Slots</h3>
+        <div id="slots-container"></div>
+    </div>
+    
     <!-- GitHub Setup Section -->
     <div style="margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
       <h3 style="margin: 0 0 12px 0; font-size: 1.1rem; color: #495057;">🔧 GitHub Integration Setup</h3>
@@ -172,13 +178,6 @@
       <div id="githubStatus" style="margin-top: 8px; font-size: 12px;"></div>
     </div>
     
-    <div class="container">
-      <div id="slots-list" style="margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-        <h3 style="margin: 0 0 12px 0; font-size: 1.1rem; color: #495057;">📅 Current Slots</h3>
-        <div id="slots-container"></div>
-      </div>
-    </div>
-
     <script>
       function toggleInfo() {
         const info = document.getElementById('info');
@@ -192,37 +191,122 @@
         }
       }
       
-      // Add this function to display slots
-      async function displaySlots() {
-        const slotsContainer = document.getElementById('slots-container');
-        slotsContainer.innerHTML = '';
-        
-        try {
-            let slots = [];
-            if (window.githubAPI) {
-                slots = await window.githubAPI.getBookedSlots();
-            } else {
-                slots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
-            }
-            
-            slots.sort((a, b) => new Date(a.from) - new Date(b.from));
-            
-            slots.forEach(slot => {
-                const slotElement = document.createElement('div');
-                slotElement.style.padding = '8px';
-                slotElement.style.marginBottom = '8px';
-                slotElement.style.borderBottom = '1px solid #e9ecef';
-                slotElement.innerHTML = `
-                    <div style="font-weight: 500;">From: ${slot.from}</div>
-                    <div style="font-weight: 500;">To: ${slot.to}</div>
-                    ${slot.info ? `<div style="color: #6c757d; font-size: 0.9em;">${slot.info}</div>` : ''}
-                `;
-                slotsContainer.appendChild(slotElement);
-            });
-        } catch (error) {
-            console.error('Error displaying slots:', error);
-        }
+      // Initialize flatpickr with more specific options
+      const startPicker = flatpickr("#slot-start", {
+          enableTime: true,
+          dateFormat: "Y-m-d H:i",
+          minDate: "today",
+          time_24hr: true,
+          minuteIncrement: 1,
+          allowInput: false,
+          onChange: function(selectedDates, dateStr) {
+              // Update end time minimum when start time changes
+              endPicker.set('minDate', dateStr);
+          }
+      });
+      
+      const endPicker = flatpickr("#slot-end", {
+          enableTime: true,
+          dateFormat: "Y-m-d H:i",
+          minDate: "today",
+          time_24hr: true,
+          minuteIncrement: 1,
+          allowInput: false
+      });
+      
+      // Modify the GitHub setup function to handle errors better
+      async function setupGitHub() {
+          const token = document.getElementById('githubToken').value.trim();
+          const owner = document.getElementById('githubOwner').value.trim();
+          const repo = document.getElementById('githubRepo').value.trim();
+          const status = document.getElementById('githubStatus');
+          
+          if (!token || !owner || !repo) {
+              status.textContent = 'Please fill in all GitHub fields.';
+              status.style.color = '#dc3545';
+              return;
+          }
+          
+          status.textContent = 'Connecting to GitHub...';
+          status.style.color = '#007bff';
+          
+          try {
+              // Initialize GitHub API
+              window.githubAPI = new GitHubAPI(token, owner, repo);
+              
+              // Test the connection by trying to get slots
+              const slots = await window.githubAPI.getBookedSlots();
+              console.log('GitHub connection successful, slots:', slots);
+              
+              status.textContent = '✅ GitHub connected successfully!';
+              status.style.color = '#28a745';
+              
+              // Save credentials to localStorage
+              localStorage.setItem('githubConfig', JSON.stringify({ token, owner, repo }));
+              
+              // Display current slots
+              await displaySlots();
+              
+          } catch (error) {
+              console.error('GitHub setup error:', error);
+              status.textContent = '❌ GitHub connection failed: ' + error.message;
+              status.style.color = '#dc3545';
+          }
       }
+      
+      // Function to filter and display slots
+      async function displaySlots() {
+          const slotsContainer = document.getElementById('slots-container');
+          if (!slotsContainer) return;
+          
+          slotsContainer.innerHTML = '';
+          
+          try {
+              let slots = [];
+              if (window.githubAPI) {
+                  slots = await window.githubAPI.getBookedSlots();
+              } else {
+                  slots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
+              }
+              
+              // Filter out expired slots
+              const now = new Date();
+              slots = slots.filter(slot => new Date(slot.to) > now);
+              
+              // Sort slots by start time
+              slots.sort((a, b) => new Date(a.from) - new Date(b.from));
+              
+              if (slots.length === 0) {
+                  slotsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;">No active slots</div>';
+                  return;
+              }
+              
+              slots.forEach(slot => {
+                  const slotElement = document.createElement('div');
+                  slotElement.style.padding = '8px';
+                  slotElement.style.marginBottom = '8px';
+                  slotElement.style.borderBottom = '1px solid #e9ecef';
+                  slotElement.innerHTML = `
+                      <div style="font-weight: 500;">From: ${slot.from}</div>
+                      <div style="font-weight: 500;">To: ${slot.to}</div>
+                      ${slot.info ? `<div style="color: #6c757d; font-size: 0.9em;">${slot.info}</div>` : ''}
+                  `;
+                  slotsContainer.appendChild(slotElement);
+              });
+              
+              // Update GitHub if slots were filtered
+              if (window.githubAPI && slots.length < slots.length) {
+                  await window.githubAPI.updateBookedSlots(slots);
+              }
+              
+          } catch (error) {
+              console.error('Error displaying slots:', error);
+              slotsContainer.innerHTML = '<div style="color: #dc3545; text-align: center;">Error loading slots</div>';
+          }
+      }
+      
+      // Auto-refresh slots every minute to clean up expired ones
+      setInterval(displaySlots, 60000);
       
       // Modify the form submission to refresh the display
       document.getElementById('slotForm').onsubmit = async function(e) {
