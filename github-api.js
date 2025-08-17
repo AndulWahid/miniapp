@@ -127,6 +127,44 @@ class GitHubAPI {
             return [];
         }
     }
+
+    // Delete a specific slot by ID
+    async deleteSlot(slotId) {
+        try {
+            const currentSlots = await this.getBookedSlots();
+            const updatedSlots = currentSlots.filter(slot => slot.id !== slotId);
+            await this.updateBookedSlots(updatedSlots);
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting slot:', error);
+            throw error;
+        }
+    }
+
+    // Update a specific slot
+    async updateSlot(slotId, updatedSlot) {
+        try {
+            const currentSlots = await this.getBookedSlots();
+            const slotIndex = currentSlots.findIndex(slot => slot.id === slotId);
+            
+            if (slotIndex === -1) {
+                throw new Error('Slot not found');
+            }
+            
+            // Preserve the ID and update other fields
+            currentSlots[slotIndex] = {
+                ...currentSlots[slotIndex],
+                ...updatedSlot,
+                id: slotId
+            };
+            
+            await this.updateBookedSlots(currentSlots);
+            return { success: true, slot: currentSlots[slotIndex] };
+        } catch (error) {
+            console.error('Error updating slot:', error);
+            throw error;
+        }
+    }
 }
 
 // Global GitHub API instance
