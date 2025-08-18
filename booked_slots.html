@@ -249,7 +249,7 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
   <!-- Add this line to load GitHubAPI class -->
   <script src="github-api.js"></script>
 </head>
@@ -347,6 +347,7 @@
           time_24hr: true,
           minuteIncrement: 1,
           allowInput: false,
+          position: 'below',
           onChange: function(selectedDates, dateStr) {
               // Update end time minimum when start time changes
               endPicker.set('minDate', dateStr);
