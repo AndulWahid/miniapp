@@ -3,9 +3,9 @@
   "lax_dropoff_active": true,
   "monday_transfer_active": true,
   "tuesday_transfer_active": true,
-  "wednesday_transfer_active": false,
+  "wednesday_transfer_active": true,
   "thursday_transfer_active": true,
   "friday_transfer_active": true,
   "saturday_transfer_active": true,
-  "sunday_transfer_active": true
+  "sunday_transfer_active": false
 }
